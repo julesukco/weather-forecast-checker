@@ -1,8 +1,10 @@
 {
 	"folders": [
 		{
-			"path": "/Users/julian/Library/Mobile Documents/iCloud~dk~simonbs~Scriptable/Documents"
+			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"python.pythonPath": "venv/bin/python"
+	}
 }
