@@ -23,21 +23,26 @@ def getWeatherData():
         response = requests.get("https://api.darksky.net/forecast/"+DARK_SKY_API_KEY+"/"+latitude+","+longitude+","+search_date+"?"+option_list)
         json_res = response.json()
 
-        print("\n"+(d_from_date + timedelta(days=i)).strftime('%Y-%m-%d %A'))
+        print("\n Create/Update document for: "+(d_from_date + timedelta(days=i)).strftime('%Y-%m-%d %A'))
 
-        unit_type = '°F' if json_res['flags']['units'] == 'us' else '°C'
-
-        print("Min temperature: "+str(json_res['daily']['data'][0]['apparentTemperatureMin'])+unit_type)
-        print("Max temperature: "+str(json_res['daily']['data'][0]['apparentTemperatureMax'])+unit_type)
-        print("Summary: " + json_res['daily']['data'][0]['summary'])
         precip_type = None
         precip_prob = None
+        chance_snow = 0
+        chance_rain = 0
         if 'precipProbability' in json_res['daily']['data'][0] and 'precipType' in json_res['daily']['data'][0]:
             precip_type = json_res['daily']['data'][0]['precipType']
             precip_prob = json_res['daily']['data'][0]['precipProbability']
         if (precip_type == 'rain' and precip_prob != None):
+            chance_rain = precip_prob * 100
+        if (precip_type == 'snow' and precip_prob != None):
+            chance_snow = precip_prob * 100
             precip_prob *= 100
-            print("Chance of rain: %.2f%%" % (precip_prob))
+
+        print("Min temperature: "+str(json_res['daily']['data'][0]['apparentTemperatureMin']))
+        print("Max temperature: "+str(json_res['daily']['data'][0]['apparentTemperatureMax']))
+        print("Summary: " + json_res['daily']['data'][0]['summary'])
+        print("Chance of rain: " + str(chance_rain))
+        print("Chance of snow: " + str(chance_snow))
     return 
 
 def rowOfData():
