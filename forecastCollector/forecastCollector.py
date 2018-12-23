@@ -4,6 +4,7 @@ import os, sys
 from geopy.geocoders import Nominatim
 from datetime import datetime,timedelta
 import sys, requests
+from pymongo import MongoClient
 
 DARK_SKY_API_KEY = "6e8fd42d2b312d4cc94121ef2de8c2bd"
 option_list = "exclude=currently,minutely,hourly,alerts&amp;units=si"
@@ -15,8 +16,14 @@ delta = d_to_date - d_from_date
 latitude = str(location.latitude)
 longitude = str(location.longitude)
 
+client = MongoClient('mongodb://julesuk1:KXzrs6mpjj23HcRT3wtSZMqExbVOEgIFZRx0fZq6Pl2GFyhtJqAQjA7rksXihKrPHRh3gplRMvFPLerEj8rL7g==@julesuk1.documents.azure.com:10255/?ssl=true&replicaSet=globaldb')
+db = client['weatherDB']
+
 def getWeatherData():
     print("\nLocation: "+ location.address)
+
+    posts = db.weather
+
     for i in range(delta.days+1):
         new_date = (d_from_date + timedelta(days=i)).strftime('%Y-%m-%d')
         search_date = new_date+"T00:00:00"
@@ -52,6 +59,29 @@ def getWeatherData():
         print("Chance of rain: " + str(chance_rain))
         print("Chance of snow: " + str(chance_snow))
         print("Accummulation: "+str(precip_accumulation))
+
+        post_data = {
+            "date": "" +str(new_date) + "",
+            "forecasts": [
+                {
+                "daysAhead": i + 1,
+                "minTemperature": json_res['daily']['data'][0]['temperatureMin'],
+                "maxTemperature": json_res['daily']['data'][0]['temperatureMax'],
+                "realfeelMinTemperature": json_res['daily']['data'][0]['apparentTemperatureMin'],
+                "RealfeelMaxTemperature": json_res['daily']['data'][0]['apparentTemperatureMax'],
+                "windSpeed": json_res['daily']['data'][0]['windSpeed'],
+                "windGust": json_res['daily']['data'][0]['windGust'],
+                "icon": "" + str(json_res['daily']['data'][0]['icon']) + "",
+                "summary": json_res['daily']['data'][0]['summary'],
+                "chanceOfRain": chance_rain,
+                "chanceOfSnow": chance_snow,
+                "accummulation": precip_accumulation
+                }
+            ]
+        }
+        result = posts.insert_one(post_data)
+        print('One post: {0}'.format(result.inserted_id))
+
     return 
 
 def rowOfData():
