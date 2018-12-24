@@ -10,8 +10,8 @@ DARK_SKY_API_KEY = "6e8fd42d2b312d4cc94121ef2de8c2bd"
 option_list = "exclude=currently,minutely,hourly,alerts&amp;units=si"
 
 location = Nominatim().geocode('Elizabeth, CO', language='en_US')
-d_from_date = datetime.strptime('2018-12-24' , '%Y-%m-%d')
-d_to_date = datetime.strptime('2018-12-31' , '%Y-%m-%d')
+d_from_date = datetime.strptime('2018-12-23' , '%Y-%m-%d')
+d_to_date = datetime.strptime('2019-01-05' , '%Y-%m-%d')
 delta = d_to_date - d_from_date
 latitude = str(location.latitude)
 longitude = str(location.longitude)
@@ -60,27 +60,58 @@ def getWeatherData():
         print("Chance of snow: " + str(chance_snow))
         print("Accummulation: "+str(precip_accumulation))
 
-        post_data = {
-            "date": "" +str(new_date) + "",
-            "forecasts": [
+        existing_dict = posts.find_one({'date': str(new_date)})
+        if (existing_dict != None):
+            print(existing_dict)
+            existing_dict['forecasts'].append(
                 {
-                "daysAhead": i + 1,
-                "minTemperature": json_res['daily']['data'][0]['temperatureMin'],
-                "maxTemperature": json_res['daily']['data'][0]['temperatureMax'],
-                "realfeelMinTemperature": json_res['daily']['data'][0]['apparentTemperatureMin'],
-                "RealfeelMaxTemperature": json_res['daily']['data'][0]['apparentTemperatureMax'],
-                "windSpeed": json_res['daily']['data'][0]['windSpeed'],
-                "windGust": json_res['daily']['data'][0]['windGust'],
-                "icon": "" + str(json_res['daily']['data'][0]['icon']) + "",
-                "summary": json_res['daily']['data'][0]['summary'],
-                "chanceOfRain": chance_rain,
-                "chanceOfSnow": chance_snow,
-                "accummulation": precip_accumulation
+                    "daysAhead": i + 1,
+                    "minTemperature": json_res['daily']['data'][0]['temperatureMin'],
+                    "maxTemperature": json_res['daily']['data'][0]['temperatureMax'],
+                    "realfeelMinTemperature": json_res['daily']['data'][0]['apparentTemperatureMin'],
+                    "RealfeelMaxTemperature": json_res['daily']['data'][0]['apparentTemperatureMax'],
+                    "windSpeed": json_res['daily']['data'][0]['windSpeed'],
+                    "windGust": json_res['daily']['data'][0]['windGust'],
+                    "icon": "" + str(json_res['daily']['data'][0]['icon']) + "",
+                    "summary": json_res['daily']['data'][0]['summary'],
+                    "chanceOfRain": chance_rain,
+                    "chanceOfSnow": chance_snow,
+                    "accummulation": precip_accumulation
                 }
-            ]
-        }
-        result = posts.insert_one(post_data)
-        print('One post: {0}'.format(result.inserted_id))
+            )
+            print(existing_dict)
+            posts.update_one(
+                {"date": str(new_date)},
+                {"$set": existing_dict},
+                upsert = True
+                )
+        else:
+            post_data = {
+                "date": str(new_date),
+                "forecasts": [
+                    {
+                    "daysAhead": i + 1,
+                    "minTemperature": json_res['daily']['data'][0]['temperatureMin'],
+                    "maxTemperature": json_res['daily']['data'][0]['temperatureMax'],
+                    "realfeelMinTemperature": json_res['daily']['data'][0]['apparentTemperatureMin'],
+                    "RealfeelMaxTemperature": json_res['daily']['data'][0]['apparentTemperatureMax'],
+                    "windSpeed": json_res['daily']['data'][0]['windSpeed'],
+                    "windGust": json_res['daily']['data'][0]['windGust'],
+                    "icon": "" + str(json_res['daily']['data'][0]['icon']) + "",
+                    "summary": json_res['daily']['data'][0]['summary'],
+                    "chanceOfRain": chance_rain,
+                    "chanceOfSnow": chance_snow,
+                    "accummulation": precip_accumulation
+                    }
+                ]
+            }
+            posts.update_one(
+                {"date": str(new_date)},
+                {"$set": post_data},
+                upsert = True
+                )
+
+# TODO: Add a new row to the array if not already found
 
     return 
 
