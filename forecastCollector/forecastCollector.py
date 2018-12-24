@@ -10,7 +10,7 @@ DARK_SKY_API_KEY = "6e8fd42d2b312d4cc94121ef2de8c2bd"
 option_list = "exclude=currently,minutely,hourly,alerts&amp;units=si"
 
 location = Nominatim().geocode('Elizabeth, CO', language='en_US')
-d_from_date = datetime.strptime('2018-12-23' , '%Y-%m-%d')
+d_from_date = datetime.strptime('2018-12-22' , '%Y-%m-%d')
 d_to_date = datetime.strptime('2019-01-02' , '%Y-%m-%d')
 delta = d_to_date - d_from_date
 latitude = str(location.latitude)
@@ -24,7 +24,7 @@ def getWeatherData():
 
     posts = db.weatherTest
 
-    for i in range(delta.days+1):
+    for i in range(delta.days):
         new_date = (d_from_date + timedelta(days=i)).strftime('%Y-%m-%d')
         search_date = new_date+"T00:00:00"
         response = requests.get("https://api.darksky.net/forecast/"+DARK_SKY_API_KEY+"/"+latitude+","+longitude+","+search_date+"?"+option_list)
@@ -67,22 +67,41 @@ def getWeatherData():
         existing_dict = posts.find_one({'date': str(new_date)})
         if (existing_dict != None):
 #            print(existing_dict)
-            existing_dict['forecasts'].append(
-                {
-                    "daysAhead": i + 1,
-                    "minTemperature": json_res['daily']['data'][0]['temperatureMin'],
-                    "maxTemperature": json_res['daily']['data'][0]['temperatureMax'],
-                    "realfeelMinTemperature": json_res['daily']['data'][0]['apparentTemperatureMin'],
-                    "RealfeelMaxTemperature": json_res['daily']['data'][0]['apparentTemperatureMax'],
-                    "windSpeed": json_res['daily']['data'][0]['windSpeed'],
-                    "windGust": windGust,
-                    "icon": "" + str(json_res['daily']['data'][0]['icon']) + "",
-                    "summary": json_res['daily']['data'][0]['summary'],
-                    "chanceOfRain": chance_rain,
-                    "chanceOfSnow": chance_snow,
-                    "accummulation": precip_accumulation
-                }
-            )
+            if str(new_date) == str(d_from_date)[:10]:
+                existing_dict.update(
+                    {
+                        "actual": {
+                            "minTemperature": json_res['daily']['data'][0]['temperatureMin'],
+                            "maxTemperature": json_res['daily']['data'][0]['temperatureMax'],
+                            "realfeelMinTemperature": json_res['daily']['data'][0]['apparentTemperatureMin'],
+                            "RealfeelMaxTemperature": json_res['daily']['data'][0]['apparentTemperatureMax'],
+                            "windSpeed": json_res['daily']['data'][0]['windSpeed'],
+                            "windGust": windGust,
+                            "icon": "" + str(json_res['daily']['data'][0]['icon']) + "",
+                            "summary": json_res['daily']['data'][0]['summary'],
+                            "chanceOfRain": chance_rain,
+                            "chanceOfSnow": chance_snow,
+                            "accummulation": precip_accumulation
+                        }
+                    }
+                )
+            else:
+                existing_dict['forecasts'].append(
+                    {
+                        "daysAhead": i-1,
+                        "minTemperature": json_res['daily']['data'][0]['temperatureMin'],
+                        "maxTemperature": json_res['daily']['data'][0]['temperatureMax'],
+                        "realfeelMinTemperature": json_res['daily']['data'][0]['apparentTemperatureMin'],
+                        "RealfeelMaxTemperature": json_res['daily']['data'][0]['apparentTemperatureMax'],
+                        "windSpeed": json_res['daily']['data'][0]['windSpeed'],
+                        "windGust": windGust,
+                        "icon": "" + str(json_res['daily']['data'][0]['icon']) + "",
+                        "summary": json_res['daily']['data'][0]['summary'],
+                        "chanceOfRain": chance_rain,
+                        "chanceOfSnow": chance_snow,
+                        "accummulation": precip_accumulation
+                    }
+                )
 #            print(existing_dict)
             posts.update_one(
                 {"date": str(new_date)},
@@ -94,7 +113,7 @@ def getWeatherData():
                 "date": str(new_date),
                 "forecasts": [
                     {
-                    "daysAhead": i + 1,
+                    "daysAhead": i-1,
                     "minTemperature": json_res['daily']['data'][0]['temperatureMin'],
                     "maxTemperature": json_res['daily']['data'][0]['temperatureMax'],
                     "realfeelMinTemperature": json_res['daily']['data'][0]['apparentTemperatureMin'],
