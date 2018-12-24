@@ -10,8 +10,12 @@ DARK_SKY_API_KEY = "6e8fd42d2b312d4cc94121ef2de8c2bd"
 option_list = "exclude=currently,minutely,hourly,alerts&amp;units=si"
 
 location = Nominatim().geocode('Elizabeth, CO', language='en_US')
-d_from_date = datetime.strptime('2018-12-22' , '%Y-%m-%d')
-d_to_date = datetime.strptime('2019-01-02' , '%Y-%m-%d')
+
+now = datetime.now()
+start = now + timedelta(days=-1)
+later = now + timedelta(days=10)
+d_from_date = datetime.strptime(start.strftime('%Y-%m-%d') , '%Y-%m-%d')
+d_to_date = datetime.strptime(later.strftime('%Y-%m-%d') , '%Y-%m-%d')
 delta = d_to_date - d_from_date
 latitude = str(location.latitude)
 longitude = str(location.longitude)
@@ -22,6 +26,7 @@ db = client['weatherDB']
 def getWeatherData():
     print("\nLocation: "+ location.address)
 
+#    posts = db.weather
     posts = db.weatherTest
 
     for i in range(delta.days):
@@ -133,9 +138,6 @@ def getWeatherData():
                 {"$set": post_data},
                 upsert = True
                 )
-
-# TODO: Add a new row to the array if not already found
-
     return 
 
 def rowOfData():
