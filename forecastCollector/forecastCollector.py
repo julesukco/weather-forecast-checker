@@ -26,8 +26,8 @@ db = client['weatherDB']
 def getWeatherData():
     print("\nLocation: "+ location.address)
 
-    posts = db.weather
-#    posts = db.weatherTest
+#    posts = db.weather
+    posts = db.weatherTest
 
     for i in range(delta.days):
         new_date = (d_from_date + timedelta(days=i)).strftime('%Y-%m-%d')
@@ -64,7 +64,7 @@ def getWeatherData():
         print("Wind Speed: "+str(json_res['daily']['data'][0]['windSpeed']))
         print("Wind Gust: "+str(windGust))
         print("Icon: "+str(json_res['daily']['data'][0]['icon']))
-        print("Summary: " + json_res['daily']['data'][0]['summary'])
+        print("Summary: " + unicode(json_res['daily']['data'][0]['summary']).encode('utf8'))
         print("Chance of rain: " + str(chance_rain))
         print("Chance of snow: " + str(chance_snow))
         print("Accummulation: "+str(precip_accumulation))
