@@ -26,8 +26,8 @@ db = client['weatherDB']
 def getWeatherData():
     print("\nLocation: "+ location.address)
 
-#    posts = db.weather
-    posts = db.weatherTest
+    posts = db.weather
+#    posts = db.weatherTest
 
     for i in range(delta.days):
         new_date = (d_from_date + timedelta(days=i)).strftime('%Y-%m-%d')
