@@ -5,8 +5,8 @@ from geopy.geocoders import Nominatim
 from datetime import datetime,timedelta
 import sys, requests
 from pymongo import MongoClient
+import databaseconfig as cfg
 
-DARK_SKY_API_KEY = "6e8fd42d2b312d4cc94121ef2de8c2bd"
 option_list = "exclude=currently,minutely,hourly,alerts&amp;units=si"
 
 location = Nominatim().geocode('Elizabeth, CO', language='en_US')
@@ -20,19 +20,19 @@ delta = d_to_date - d_from_date
 latitude = str(location.latitude)
 longitude = str(location.longitude)
 
-client = MongoClient('mongodb://julesuk1:KXzrs6mpjj23HcRT3wtSZMqExbVOEgIFZRx0fZq6Pl2GFyhtJqAQjA7rksXihKrPHRh3gplRMvFPLerEj8rL7g==@julesuk1.documents.azure.com:10255/?ssl=true&replicaSet=globaldb')
+client = MongoClient(cfg.dbhost)
 db = client['weatherDB']
 
 def getWeatherData():
     print("\nLocation: "+ location.address)
 
-    posts = db.weather
-#    posts = db.weatherTest
+#    posts = db.weather
+    posts = db.weatherTest
 
     for i in range(delta.days):
         new_date = (d_from_date + timedelta(days=i)).strftime('%Y-%m-%d')
         search_date = new_date+"T00:00:00"
-        response = requests.get("https://api.darksky.net/forecast/"+DARK_SKY_API_KEY+"/"+latitude+","+longitude+","+search_date+"?"+option_list)
+        response = requests.get("https://api.darksky.net/forecast/"+cfg.DARK_SKY_API_KEY+"/"+latitude+","+longitude+","+search_date+"?"+option_list)
         json_res = response.json()
 #        print (json_res)
 
