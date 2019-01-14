@@ -4,6 +4,7 @@ import os, sys
 from datetime import datetime,timedelta
 import sys
 from pymongo import MongoClient
+import databaseconfig as cfg
 
 now = datetime.now()
 start = now + timedelta(days=-1)
@@ -12,7 +13,7 @@ d_from_date = datetime.strptime(start.strftime('%Y-%m-%d') , '%Y-%m-%d')
 d_to_date = datetime.strptime(later.strftime('%Y-%m-%d') , '%Y-%m-%d')
 delta = d_to_date - d_from_date
 
-client = MongoClient('mongodb://julesuk1:KXzrs6mpjj23HcRT3wtSZMqExbVOEgIFZRx0fZq6Pl2GFyhtJqAQjA7rksXihKrPHRh3gplRMvFPLerEj8rL7g==@julesuk1.documents.azure.com:10255/?ssl=true&replicaSet=globaldb')
+client = MongoClient(cfg.dbhost)
 db = client['weatherDB']
 
 def analyzeData():
